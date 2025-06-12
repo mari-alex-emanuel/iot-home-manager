@@ -1,107 +1,98 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSmartHome } from "@/contexts/smart-home-context"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ActionButton } from "@/components/ui/action-button"
-import { Info, Trash2 } from "lucide-react"
-import Link from "next/link"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { DeviceCard } from "./device-card"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { getDeviceIcon } from "@/lib/device-utils"
 
 interface DevicesRoomViewProps {
-  devices: {
-    id: number
-    name: string
-    type: string
-    room: string
-    status: string
-    lastActive: string
-  }[]
-  onDelete: (id: number) => void
+  onDeleteDevice: (id: number) => void
 }
 
-export function DevicesRoomView({ devices, onDelete }: DevicesRoomViewProps) {
-  // Grupăm dispozitivele după cameră
-  const devicesByRoom = devices.reduce(
-    (acc, device) => {
-      if (!acc[device.room]) {
-        acc[device.room] = []
+export function DevicesRoomView({ onDeleteDevice }: DevicesRoomViewProps) {
+  const { data } = useSmartHome()
+  const [expandedRooms, setExpandedRooms] = useState<Record<number, boolean>>(() => {
+    // Get saved expanded state from localStorage or default to all expanded
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("expandedRooms")
+      return saved ? JSON.parse(saved) : {}
+    }
+    return {}
+  })
+
+  // Initialize all rooms as expanded by default if not in localStorage
+  useEffect(() => {
+    const initialState: Record<number, boolean> = {}
+    data.rooms.forEach((room) => {
+      if (expandedRooms[room.id] === undefined) {
+        initialState[room.id] = true
       }
-      acc[device.room].push(device)
-      return acc
-    },
-    {} as Record<string, typeof devices>,
-  )
+    })
 
-  // Sortăm camerele alfabetic
-  const sortedRooms = Object.keys(devicesByRoom).sort()
+    if (Object.keys(initialState).length > 0) {
+      setExpandedRooms((prev) => ({ ...prev, ...initialState }))
+    }
+  }, [data.rooms, expandedRooms])
 
-  // State pentru a ține evidența camerelor expandate
-  const [expandedRooms, setExpandedRooms] = useState<Record<string, boolean>>(
-    sortedRooms.reduce(
-      (acc, room) => {
-        acc[room] = true // Toate camerele sunt expandate inițial
-        return acc
-      },
-      {} as Record<string, boolean>,
-    ),
-  )
+  // Save expanded state to localStorage
+  useEffect(() => {
+    localStorage.setItem("expandedRooms", JSON.stringify(expandedRooms))
+  }, [expandedRooms])
 
-  const toggleRoom = (room: string) => {
+  const toggleRoomExpanded = (roomId: number) => {
     setExpandedRooms((prev) => ({
       ...prev,
-      [room]: !prev[room],
+      [roomId]: !prev[roomId],
     }))
   }
 
+  // Group devices by room
+  const devicesByRoom = data.rooms
+    .map((room) => {
+      const roomDevices = data.devices.filter((device) => device.roomId === room.id)
+      return {
+        room,
+        devices: roomDevices,
+      }
+    })
+    .filter((group) => group.devices.length > 0) // Only show rooms with devices
+
   return (
     <div className="space-y-6">
-      {sortedRooms.map((room) => (
-        <Card key={room} className="overflow-hidden">
-          <Collapsible open={expandedRooms[room]} onOpenChange={() => toggleRoom(room)}>
-            <CollapsibleTrigger className="w-full">
-              <CardHeader className="pb-2 cursor-pointer hover:bg-muted/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <CardTitle>{room}</CardTitle>
-                  <Badge variant="outline">{devicesByRoom[room].length} devices</Badge>
-                </div>
-              </CardHeader>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <CardContent>
-                <div className="space-y-4">
-                  {devicesByRoom[room].map((device) => (
-                    <div
-                      key={device.id}
-                      className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-muted/30 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex-shrink-0">{getDeviceIcon(device.type)}</div>
-                        <div>
-                          <div className="font-medium">{device.name}</div>
-                          <div className="text-sm text-muted-foreground">Last active: {device.lastActive}</div>
-                        </div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Link href={`/devices/${device.id}`}>
-                          <ActionButton variant="outline" icon={Info} label="Device Details" />
-                        </Link>
-                        <ActionButton
-                          variant="destructive"
-                          icon={Trash2}
-                          label="Delete Device"
-                          onClick={() => onDelete(device.id)}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </CollapsibleContent>
-          </Collapsible>
+      {devicesByRoom.map(({ room, devices }) => (
+        <Card key={room.id} className="overflow-hidden">
+          <CardHeader
+            className="bg-muted/50 cursor-pointer flex flex-row items-center justify-between py-3"
+            onClick={() => toggleRoomExpanded(room.id)}
+          >
+            <div className="flex items-center">
+              <CardTitle className="text-lg">{room.name}</CardTitle>
+              <Badge variant="secondary" className="ml-2">
+                {devices.length} {devices.length === 1 ? "device" : "devices"}
+              </Badge>
+            </div>
+            {expandedRooms[room.id] ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          </CardHeader>
+
+          {expandedRooms[room.id] && (
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {devices.map((device) => (
+                  <DeviceCard key={device.id} device={device} roomName={room.name} onDelete={onDeleteDevice} compact />
+                ))}
+              </div>
+            </CardContent>
+          )}
         </Card>
       ))}
+
+      {devicesByRoom.length === 0 && (
+        <Card>
+          <CardContent className="py-6 text-center text-muted-foreground">No devices found in any room.</CardContent>
+        </Card>
+      )}
     </div>
   )
 }

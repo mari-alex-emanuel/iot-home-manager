@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useSmartHome } from "@/contexts/smart-home-context"
+import { useCustomToast } from "@/components/toast-provider"
+import { useAuth } from "@/contexts/auth-context"
 import type { Device, LightDevice } from "@/lib/types"
 
 type DeviceWithStatus = Device & { status: "Online" | "Offline" }
@@ -18,6 +20,8 @@ export interface DeviceControlState<T extends DeviceWithStatus> {
 
 export function useDeviceControl<T extends DeviceWithStatus>(deviceId: number): DeviceControlState<T> {
   const { getDeviceById, updateDevice, getDevicesByRoomId } = useSmartHome()
+  const { showToast } = useCustomToast()
+  const { isAuthenticated } = useAuth()
   const [device, setDevice] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
   const [roomLights, setRoomLights] = useState<LightDevice[]>([])
@@ -40,6 +44,16 @@ export function useDeviceControl<T extends DeviceWithStatus>(deviceId: number): 
   const togglePower = useCallback(() => {
     if (!device) return
 
+    // Verificăm dacă utilizatorul are permisiunea de a controla dispozitivele
+    if (!isAuthenticated()) {
+      showToast({
+        title: "Permisiune refuzată",
+        description: "Nu aveți permisiunea de a controla dispozitivele.",
+        variant: "destructive",
+      })
+      return
+    }
+
     const newStatus = device.status === "Online" ? "Offline" : "Online"
     updateDevice<T>(deviceId, {
       status: newStatus,
@@ -51,11 +65,21 @@ export function useDeviceControl<T extends DeviceWithStatus>(deviceId: number): 
       status: newStatus,
       lastActive: "Just now",
     } as T)
-  }, [device, deviceId, updateDevice])
+  }, [device, deviceId, updateDevice, isAuthenticated, showToast])
 
   const updateDeviceState = useCallback(
     <K extends keyof Omit<T, "id" | "type">>(key: K, value: T[K]) => {
       if (!device) return
+
+      // Verificăm dacă utilizatorul are permisiunea de a controla dispozitivele
+      if (!isAuthenticated()) {
+        showToast({
+          title: "Permisiune refuzată",
+          description: "Nu aveți permisiunea de a controla dispozitivele.",
+          variant: "destructive",
+        })
+        return
+      }
 
       const updateData = {
         [key]: value,
@@ -70,12 +94,22 @@ export function useDeviceControl<T extends DeviceWithStatus>(deviceId: number): 
         lastActive: "Just now",
       } as T)
     },
-    [device, deviceId, updateDevice],
+    [device, deviceId, updateDevice, isAuthenticated, showToast],
   )
 
   const updateMultipleStates = useCallback(
     (data: Partial<Omit<T, "id" | "type">>) => {
       if (!device) return
+
+      // Verificăm dacă utilizatorul are permisiunea de a controla dispozitivele
+      if (!isAuthenticated()) {
+        showToast({
+          title: "Permisiune refuzată",
+          description: "Nu aveți permisiunea de a controla dispozitivele.",
+          variant: "destructive",
+        })
+        return
+      }
 
       const updateData = {
         ...data,
@@ -90,7 +124,7 @@ export function useDeviceControl<T extends DeviceWithStatus>(deviceId: number): 
         lastActive: "Just now",
       } as T)
     },
-    [device, deviceId, updateDevice],
+    [device, deviceId, updateDevice, isAuthenticated, showToast],
   )
 
   return {

@@ -6,6 +6,8 @@ import { Slider } from "@/components/ui/slider"
 import { HexColorPicker } from "react-colorful"
 import { useDevice } from "@/hooks/use-device"
 import type { LightDevice } from "@/lib/types"
+import { useAuth } from "@/contexts/auth-context"
+import { useCustomToast } from "@/components/toast-provider"
 
 interface LightControlProps {
   deviceId: number
@@ -15,6 +17,8 @@ export function LightControl({ deviceId }: LightControlProps) {
   const { device, updateDeviceState } = useDevice<LightDevice>(deviceId)
   const [brightness, setBrightness] = useState(50)
   const [color, setColor] = useState("#ffffff")
+  const { isAuthenticated } = useAuth()
+  const { showToast } = useCustomToast()
 
   useEffect(() => {
     if (device) {
@@ -24,12 +28,30 @@ export function LightControl({ deviceId }: LightControlProps) {
   }, [device])
 
   const handleBrightnessChange = (value: number[]) => {
+    if (!isAuthenticated()) {
+      showToast({
+        title: "Permisiune refuzată",
+        description: "Nu aveți permisiunea de a controla dispozitivele.",
+        variant: "destructive",
+      })
+      return
+    }
+
     const newBrightness = value[0]
     setBrightness(newBrightness)
     updateDeviceState({ brightness: newBrightness })
   }
 
   const handleColorChange = (newColor: string) => {
+    if (!isAuthenticated()) {
+      showToast({
+        title: "Permisiune refuzată",
+        description: "Nu aveți permisiunea de a controla dispozitivele.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setColor(newColor)
     updateDeviceState({ color: newColor })
   }

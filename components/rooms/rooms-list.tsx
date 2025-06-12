@@ -2,91 +2,54 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { PlusCircle, Home, Bed, CookingPotIcon as Kitchen, Bath, Warehouse, Thermometer } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { PlusCircle } from "lucide-react"
 import { AddRoomDialog } from "./add-room-dialog"
-import { PageHeader } from "@/components/ui/page-header"
-import { CardGrid } from "@/components/ui/card-grid"
-import { ActionButton } from "@/components/ui/action-button"
-import { IconWrapper } from "@/components/ui/icon-wrapper"
 import { useSmartHome } from "@/contexts/smart-home-context"
-import { roomTypes } from "@/lib/types"
+import { CardGrid } from "@/components/ui/card-grid"
 import Link from "next/link"
-
-const roomTypeIcons = {
-  living: Home,
-  bedroom: Bed,
-  kitchen: Kitchen,
-  bathroom: Bath,
-  garage: Warehouse,
-  entrance: Home,
-  other: Home,
-}
+import { roomTypes } from "@/lib/types"
+import { useAuth } from "@/contexts/auth-context"
 
 export function RoomsList() {
-  const { data, getDevicesByRoomId } = useSmartHome()
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const { data } = useSmartHome()
+  const { isAdmin } = useAuth()
+  const [isAddRoomDialogOpen, setIsAddRoomDialogOpen] = useState(false)
+
+  // Add safety check for data and rooms
+  const rooms = data?.rooms || []
 
   return (
     <>
-      <PageHeader
-        title="Rooms"
-        action={<ActionButton onClick={() => setIsAddDialogOpen(true)} icon={PlusCircle} label="Add Room" />}
-      />
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Rooms</h1>
+          <p className="text-muted-foreground">Manage your smart home rooms and associated devices</p>
+        </div>
+        {isAdmin() && (
+          <Button onClick={() => setIsAddRoomDialogOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Room
+          </Button>
+        )}
+      </div>
+
       <CardGrid>
-        {data.rooms.map((room) => {
-          const RoomIcon = roomTypeIcons[room.type as keyof typeof roomTypeIcons] || Home
-          const devices = getDevicesByRoomId(room.id)
-          const roomTypeName = roomTypes.find((t) => t.value === room.type)?.label || room.type
-
-          // Check if room has temperature range set
-          const hasTemperatureControl = room.temperatureRange !== undefined
-
-          // Check if room has thermostats, AC or heating devices
-          const hasThermostats = devices.some((d) => d.type === "thermostat")
-          const hasClimateDevices = devices.some((d) => d.type === "ac" || d.type === "heating")
+        {rooms.map((room) => {
+          const roomType = roomTypes.find((t) => t.value === room.type)
+          const deviceCount = room.devices?.length || 0
 
           return (
-            <Link href={`/rooms/${room.id}`} key={room.id}>
-              <Card className="h-full hover:bg-muted/30 transition-colors cursor-pointer">
+            <Link href={`/rooms/${room.id}`} key={room.id} className="block h-full">
+              <Card className="h-full hover:bg-muted/30 transition-colors">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center">
-                      <IconWrapper icon={RoomIcon} color="text-primary" />
-                      <span className="ml-2">{room.name}</span>
-                    </CardTitle>
-                    <Badge>{roomTypeName}</Badge>
-                  </div>
-                  <CardDescription>{devices.length} connected devices</CardDescription>
+                  <CardTitle>{room.name}</CardTitle>
+                  <CardDescription>{roomType?.label || room.type}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {devices.length > 0 ? (
-                      <>
-                        {devices.slice(0, 3).map((device) => (
-                          <Badge key={device.id} variant="outline">
-                            {device.type}
-                          </Badge>
-                        ))}
-                        {devices.length > 3 && <Badge variant="outline">+{devices.length - 3} more</Badge>}
-                      </>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">No devices</span>
-                    )}
-                  </div>
-
-                  {(hasThermostats || hasClimateDevices) && (
-                    <div className="mt-4 flex items-center text-sm">
-                      <Thermometer className="h-4 w-4 mr-1 text-orange-500" />
-                      {hasTemperatureControl ? (
-                        <span>
-                          {room.temperatureRange?.min}°C - {room.temperatureRange?.max}°C
-                        </span>
-                      ) : (
-                        <span>20°C - 24°C</span>
-                      )}
-                    </div>
-                  )}
+                  <p className="text-sm text-muted-foreground">
+                    {deviceCount} {deviceCount === 1 ? "device" : "devices"}
+                  </p>
                 </CardContent>
               </Card>
             </Link>
@@ -94,7 +57,7 @@ export function RoomsList() {
         })}
       </CardGrid>
 
-      <AddRoomDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      <AddRoomDialog open={isAddRoomDialogOpen} onOpenChange={setIsAddRoomDialogOpen} />
     </>
   )
 }

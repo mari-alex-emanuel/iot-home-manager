@@ -1,151 +1,94 @@
 "use client"
 
-import { useState } from "react"
-import { ActionCard, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/action-card"
-import { Info, Trash2, PlusCircle, LayoutGrid, Home } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { PlusCircle, Home, List } from "lucide-react"
 import { AddDeviceDialog } from "./add-device-dialog"
-import { PageHeader } from "@/components/ui/page-header"
-import { CardGrid } from "@/components/ui/card-grid"
-import { ActionButton } from "@/components/ui/action-button"
-import Link from "next/link"
-import { Card } from "@/components/ui/card"
 import { useSmartHome } from "@/contexts/smart-home-context"
-import { getDeviceIcon } from "@/lib/device-utils"
+import { CardGrid } from "@/components/ui/card-grid"
+import { DeviceCard } from "./device-card"
+import { useCustomToast } from "@/components/toast-provider"
+import { useAuth } from "@/contexts/auth-context"
+import { DevicesRoomView } from "./devices-room-view"
 
 export function DevicesList() {
   const { data, deleteDevice, getRoomName } = useSmartHome()
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<"grid" | "rooms">("grid")
+  const { showToast } = useCustomToast()
+  const { isAdmin } = useAuth()
+  const [isAddDeviceDialogOpen, setIsAddDeviceDialogOpen] = useState(false)
+  const [viewByRooms, setViewByRooms] = useState(() => {
+    // Get saved preference from localStorage or default to false
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("viewDevicesByRooms")
+      return saved ? JSON.parse(saved) : false
+    }
+    return false
+  })
 
-  // Grupăm dispozitivele după cameră
-  const devicesByRoom = data.devices.reduce(
-    (acc, device) => {
-      const roomName = getRoomName(device.roomId)
-      if (!acc[roomName]) {
-        acc[roomName] = []
-      }
-      acc[roomName].push(device)
-      return acc
-    },
-    {} as Record<string, typeof data.devices>,
-  )
+  // Save preference to localStorage
+  useEffect(() => {
+    localStorage.setItem("viewDevicesByRooms", JSON.stringify(viewByRooms))
+  }, [viewByRooms])
 
-  // Sortăm camerele alfabetic
-  const sortedRooms = Object.keys(devicesByRoom).sort()
+  const handleDeleteDevice = (id: number) => {
+    deleteDevice(id)
+    showToast({
+      title: "Device deleted",
+      description: "The device has been removed from your smart home system.",
+      variant: "default",
+    })
+  }
+
+  const toggleView = () => {
+    setViewByRooms(!viewByRooms)
+  }
 
   return (
     <>
-      <PageHeader
-        title="Devices"
-        action={
-          <div className="flex flex-wrap gap-2">
-            <div className="bg-muted rounded-md p-1 flex">
-              <button
-                className={`p-1 rounded-md ${viewMode === "grid" ? "bg-background shadow-sm" : ""}`}
-                onClick={() => setViewMode("grid")}
-                aria-label="Grid view"
-              >
-                <LayoutGrid className="h-5 w-5" />
-              </button>
-              <button
-                className={`p-1 rounded-md ${viewMode === "rooms" ? "bg-background shadow-sm" : ""}`}
-                onClick={() => setViewMode("rooms")}
-                aria-label="Room view"
-              >
-                <Home className="h-5 w-5" />
-              </button>
-            </div>
-            <ActionButton onClick={() => setIsAddDialogOpen(true)} icon={PlusCircle} label="Add Device" />
-          </div>
-        }
-      />
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Devices</h1>
+          <p className="text-muted-foreground">Manage your smart home devices</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={toggleView} className="flex items-center">
+            {viewByRooms ? (
+              <>
+                <List className="mr-2 h-4 w-4" />
+                View as List
+              </>
+            ) : (
+              <>
+                <Home className="mr-2 h-4 w-4" />
+                View by Rooms
+              </>
+            )}
+          </Button>
+          {isAdmin() && (
+            <Button onClick={() => setIsAddDeviceDialogOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Device
+            </Button>
+          )}
+        </div>
+      </div>
 
-      {viewMode === "grid" ? (
+      {viewByRooms ? (
+        <DevicesRoomView onDeleteDevice={handleDeleteDevice} />
+      ) : (
         <CardGrid>
           {data.devices.map((device) => (
-            <DeviceCard key={device.id} device={device} roomName={getRoomName(device.roomId)} onDelete={deleteDevice} />
+            <DeviceCard
+              key={device.id}
+              device={device}
+              roomName={getRoomName(device.roomId)}
+              onDelete={handleDeleteDevice}
+            />
           ))}
         </CardGrid>
-      ) : (
-        <div className="space-y-6">
-          {sortedRooms.map((room) => (
-            <Card key={room} className="overflow-hidden">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle>{room}</CardTitle>
-                  <div className="bg-muted px-2 py-1 rounded-md text-sm">{devicesByRoom[room].length} devices</div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {devicesByRoom[room].map((device) => (
-                    <div
-                      key={device.id}
-                      className="flex flex-col p-3 rounded-md border bg-card hover:bg-muted/30 transition-colors"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        {getDeviceIcon(device.type)}
-                        <div className="font-medium truncate">{device.name}</div>
-                      </div>
-                      <div className="flex justify-end gap-1 mt-auto">
-                        <Link href={`/devices/${device.id}`}>
-                          <ActionButton variant="outline" icon={Info} label="Device Details" />
-                        </Link>
-                        <ActionButton
-                          variant="destructive"
-                          icon={Trash2}
-                          label="Delete Device"
-                          onClick={() => deleteDevice(device.id)}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
       )}
 
-      <AddDeviceDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      <AddDeviceDialog open={isAddDeviceDialogOpen} onOpenChange={setIsAddDeviceDialogOpen} />
     </>
-  )
-}
-
-interface DeviceCardProps {
-  device: {
-    id: number
-    name: string
-    type: string
-    status: "Online" | "Offline"
-  }
-  roomName: string
-  onDelete: (id: number) => void
-}
-
-function DeviceCard({ device, roomName, onDelete }: DeviceCardProps) {
-  return (
-    <ActionCard
-      footer={
-        <>
-          <Link href={`/devices/${device.id}`}>
-            <ActionButton variant="outline" icon={Info} label="Device Details" />
-          </Link>
-
-          <ActionButton variant="destructive" icon={Trash2} label="Delete Device" onClick={() => onDelete(device.id)} />
-        </>
-      }
-    >
-      <CardHeader className="pb-2">
-        <div className="flex items-center">
-          {getDeviceIcon(device.type)}
-          <CardTitle className="ml-2 text-lg">{device.name}</CardTitle>
-        </div>
-        <CardDescription>Room: {roomName}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">Type: {device.type}</p>
-      </CardContent>
-    </ActionCard>
   )
 }

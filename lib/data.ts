@@ -63,6 +63,10 @@ export const initialData: SmartHomeData = {
       powerConsumption: "5W",
       batteryLevel: "N/A",
       installationDate: "2023-05-15",
+      initialCost: 45,
+      installationCost: 15,
+      monthlySavings: 3,
+      lifespan: 60, // 5 ani
     },
     {
       id: 2,
@@ -80,6 +84,10 @@ export const initialData: SmartHomeData = {
       powerConsumption: "2W",
       batteryLevel: "92%",
       installationDate: "2023-04-10",
+      initialCost: 120,
+      installationCost: 50,
+      monthlySavings: 15,
+      lifespan: 72, // 6 ani
     },
     {
       id: 3,
@@ -116,6 +124,10 @@ export const initialData: SmartHomeData = {
       powerConsumption: "3W",
       batteryLevel: "N/A",
       installationDate: "2023-02-15",
+      initialCost: 150,
+      installationCost: 50,
+      monthlySavings: 18,
+      lifespan: 72, // 6 ani
     },
     {
       id: 5,
@@ -133,6 +145,10 @@ export const initialData: SmartHomeData = {
       powerConsumption: "2W",
       batteryLevel: "N/A",
       installationDate: "2023-01-10",
+      initialCost: 2500,
+      installationCost: 800,
+      monthlySavings: 85,
+      lifespan: 240, // 20 ani
     },
     {
       id: 6,
@@ -169,6 +185,10 @@ export const initialData: SmartHomeData = {
       powerConsumption: "Varies",
       batteryLevel: "N/A",
       installationDate: "2023-06-20",
+      initialCost: 35,
+      installationCost: 20,
+      monthlySavings: 5,
+      lifespan: 60, // 5 ani
     },
     {
       id: 8,
@@ -203,6 +223,10 @@ export const initialData: SmartHomeData = {
       powerConsumption: "5W",
       batteryLevel: "N/A",
       installationDate: "2023-05-20",
+      initialCost: 45,
+      installationCost: 15,
+      monthlySavings: 3,
+      lifespan: 60, // 5 ani
     },
     {
       id: 10,
@@ -254,6 +278,10 @@ export const initialData: SmartHomeData = {
       powerConsumption: "2W",
       batteryLevel: "95%",
       installationDate: "2023-04-15",
+      initialCost: 120,
+      installationCost: 50,
+      monthlySavings: 15,
+      lifespan: 72, // 6 ani
     },
     {
       id: 13,
@@ -288,6 +316,10 @@ export const initialData: SmartHomeData = {
       powerConsumption: "2W",
       batteryLevel: "87%",
       installationDate: "2023-04-12",
+      initialCost: 95,
+      installationCost: 30,
+      monthlySavings: 1.5,
+      lifespan: 48, // 4 ani
     },
     {
       id: 15,
@@ -305,6 +337,10 @@ export const initialData: SmartHomeData = {
       powerConsumption: "2W",
       batteryLevel: "91%",
       installationDate: "2023-04-14",
+      initialCost: 120,
+      installationCost: 50,
+      monthlySavings: 12,
+      lifespan: 72, // 6 ani
     },
     {
       id: 16,
@@ -339,6 +375,10 @@ export const initialData: SmartHomeData = {
       powerConsumption: "5W",
       batteryLevel: "N/A",
       installationDate: "2023-05-24",
+      initialCost: 85,
+      installationCost: 40,
+      monthlySavings: 1,
+      lifespan: 60, // 5 ani
     },
     {
       id: 18,
@@ -392,6 +432,10 @@ export const initialData: SmartHomeData = {
       installationDate: "2023-03-25",
       isLocked: false,
       isOpen: false,
+      initialCost: 40,
+      installationCost: 20,
+      monthlySavings: 2,
+      lifespan: 48, // 4 ani
     },
     {
       id: 21,
@@ -409,6 +453,10 @@ export const initialData: SmartHomeData = {
       powerConsumption: "800W",
       batteryLevel: "N/A",
       installationDate: "2023-02-10",
+      initialCost: 350,
+      installationCost: 150,
+      monthlySavings: 25,
+      lifespan: 120, // 10 ani
     },
     {
       id: 22,
@@ -516,6 +564,10 @@ export const initialData: SmartHomeData = {
       installationDate: "2023-04-15",
       smokeDetected: false,
       alarmActive: false,
+      initialCost: 80,
+      installationCost: 30,
+      monthlySavings: 5,
+      lifespan: 84, // 7 ani
     },
     {
       id: 28,
@@ -555,6 +607,10 @@ export const initialData: SmartHomeData = {
       motionDetected: false,
       autoLightControl: true,
       lastMotionDetected: "2 hours ago",
+      initialCost: 60,
+      installationCost: 25,
+      monthlySavings: 8,
+      lifespan: 60, // 5 ani
     },
     {
       id: 30,
@@ -575,6 +631,10 @@ export const initialData: SmartHomeData = {
       motionDetected: false,
       autoLightControl: true,
       lastMotionDetected: "1 hour ago",
+      initialCost: 60,
+      installationCost: 25,
+      monthlySavings: 8,
+      lifespan: 60, // 5 ani
     },
   ],
 }

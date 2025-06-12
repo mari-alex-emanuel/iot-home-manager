@@ -3,7 +3,7 @@ import { HomeModesCard } from "@/components/home-modes/home-modes-card"
 
 export default function ModesPage() {
   return (
-    <div className="container mx-auto p-4">
+    <div className="mx-auto w-full">
       {/* Actualizăm titlul paginii */}
       <PageHeader title="Moduri" description="Gestionează modurile casei tale inteligente" />
 

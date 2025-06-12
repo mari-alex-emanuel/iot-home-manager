@@ -2,43 +2,35 @@
 
 import { useState, useEffect } from "react"
 import { useSmartHome } from "@/contexts/smart-home-context"
-import type { Device } from "@/lib/types"
+import { useAuth } from "@/contexts/auth-context"
+import { useCustomToast } from "@/components/toast-provider"
 
-export function useDevice<T extends Device>(deviceId: number) {
+export function useDevice<T>(deviceId: number) {
   const { getDeviceById, updateDevice } = useSmartHome()
+  const { isAuthenticated } = useAuth()
+  const { showToast } = useCustomToast()
   const [device, setDevice] = useState<T | null>(null)
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchedDevice = getDeviceById(deviceId) as T | undefined
     setDevice(fetchedDevice || null)
-    setLoading(false)
   }, [deviceId, getDeviceById])
 
-  const updateDeviceState = (data: Partial<Omit<T, "id" | "type">>) => {
-    if (!device) return
+  const updateDeviceState = (data: Partial<T>) => {
+    if (!isAuthenticated()) {
+      showToast({
+        title: "Permisiune refuzată",
+        description: "Nu aveți permisiunea de a controla dispozitivele.",
+        variant: "destructive",
+      })
+      return
+    }
 
-    // Actualizăm starea locală pentru feedback imediat
-    setDevice({ ...device, ...data } as T)
-
-    // Actualizăm starea în context
-    updateDevice<T>(deviceId, data)
+    updateDevice(deviceId, data)
+    if (device) {
+      setDevice({ ...device, ...data } as T)
+    }
   }
 
-  const togglePower = () => {
-    if (!device) return
-
-    const newStatus = device.status === "Online" ? "Offline" : "Online"
-    updateDeviceState({
-      status: newStatus,
-      lastActive: "Just now",
-    } as Partial<Omit<T, "id" | "type">>)
-  }
-
-  return {
-    device,
-    loading,
-    updateDeviceState,
-    togglePower,
-  }
+  return { device, updateDeviceState }
 }

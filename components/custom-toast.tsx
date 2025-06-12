@@ -7,7 +7,7 @@ interface CustomToastProps {
   title: string
   description?: string
   duration?: number
-  variant?: "default" | "success" | "error" | "warning"
+  variant?: "default" | "success" | "error" | "warning" | "destructive"
   onClose?: () => void
 }
 
@@ -27,7 +27,13 @@ export function CustomToast({ title, description, duration = 5000, variant = "de
       if (remaining <= 0) {
         clearInterval(timer)
         setIsVisible(false)
-        if (onClose) onClose()
+        if (onClose) {
+          try {
+            onClose()
+          } catch (error) {
+            console.error("Error in toast onClose handler:", error)
+          }
+        }
       } else {
         setProgress(newProgress)
       }
@@ -36,6 +42,17 @@ export function CustomToast({ title, description, duration = 5000, variant = "de
     return () => clearInterval(timer)
   }, [duration, onClose])
 
+  const handleClose = () => {
+    setIsVisible(false)
+    if (onClose) {
+      try {
+        onClose()
+      } catch (error) {
+        console.error("Error in toast close handler:", error)
+      }
+    }
+  }
+
   if (!isVisible) return null
 
   const getBgColor = () => {
@@ -43,6 +60,7 @@ export function CustomToast({ title, description, duration = 5000, variant = "de
       case "success":
         return "bg-green-100 border-green-300 dark:bg-green-900/30 dark:border-green-800"
       case "error":
+      case "destructive":
         return "bg-red-100 border-red-300 dark:bg-red-900/30 dark:border-red-800"
       case "warning":
         return "bg-yellow-100 border-yellow-300 dark:bg-yellow-900/30 dark:border-yellow-800"
@@ -56,6 +74,7 @@ export function CustomToast({ title, description, duration = 5000, variant = "de
       case "success":
         return "text-green-800 dark:text-green-200"
       case "error":
+      case "destructive":
         return "text-red-800 dark:text-red-200"
       case "warning":
         return "text-yellow-800 dark:text-yellow-200"
@@ -69,6 +88,7 @@ export function CustomToast({ title, description, duration = 5000, variant = "de
       case "success":
         return "bg-green-500"
       case "error":
+      case "destructive":
         return "bg-red-500"
       case "warning":
         return "bg-yellow-500"
@@ -87,10 +107,7 @@ export function CustomToast({ title, description, duration = 5000, variant = "de
         {description && <p className={`mt-1 text-sm ${getTextColor()} opacity-90`}>{description}</p>}
         <button
           className="absolute top-2 right-2 rounded-full p-1 hover:bg-black/10 dark:hover:bg-white/10"
-          onClick={() => {
-            setIsVisible(false)
-            if (onClose) onClose()
-          }}
+          onClick={handleClose}
         >
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>

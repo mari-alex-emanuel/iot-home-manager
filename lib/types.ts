@@ -14,6 +14,11 @@ export interface BaseDevice {
   powerConsumption?: string
   batteryLevel?: string
   installationDate?: string
+  // Adăugăm informații despre cost și economii
+  initialCost?: number
+  installationCost?: number
+  monthlySavings?: number
+  lifespan?: number // durata de viață în luni
 }
 
 // Dispozitiv de tip lumină
@@ -210,4 +215,22 @@ export function isSmokeDetectorDevice(device: Device): device is SmokeDetectorDe
 
 export function isMotionSensorDevice(device: Device): device is MotionSensorDevice {
   return device.type === "motion_sensor"
+}
+
+// Adăugăm tipuri pentru amortizare
+export interface AmortizationData {
+  deviceId: number
+  initialCost: number
+  installationCost: number
+  monthlySavings: number
+  lifespan: number // în luni
+  notes?: string
+}
+
+export interface AmortizationSummary {
+  totalInvestment: number
+  totalMonthlySavings: number
+  averagePaybackPeriod: number
+  amortizedDevices: number
+  totalDevices: number
 }

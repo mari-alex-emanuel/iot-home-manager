@@ -2,17 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  Legend,
-  ReferenceLine,
-} from "recharts"
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts"
 
 // Sample data for consumption
 const generateWeeklyData = (deviceType: string) => {
@@ -100,7 +90,7 @@ export function ConsumptionChart({ deviceType, deviceName }: ConsumptionChartPro
           <TabsContent value="weekly" className="mt-2">
             <div className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={weeklyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <LineChart data={weeklyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="day" />
                   <YAxis label={{ value: "kWh", angle: -90, position: "insideLeft" }} />
@@ -117,25 +107,17 @@ export function ConsumptionChart({ deviceType, deviceName }: ConsumptionChartPro
                     ]}
                   />
                   <Legend />
-                  <ReferenceLine y={weeklyAverage} label="Avg" stroke="#ff7300" strokeDasharray="3 3" />
-                  <Area
+                  <Line type="monotone" dataKey="peak" stroke="#ffc658" strokeWidth={2} />
+                  <Line type="monotone" dataKey="offPeak" stroke="#82ca9d" strokeWidth={2} />
+                  <Line type="monotone" dataKey="standby" stroke="#8884d8" strokeWidth={2} />
+                  <Line
                     type="monotone"
-                    dataKey="standby"
-                    stackId="1"
-                    stroke="#8884d8"
-                    fill="#8884d8"
-                    fillOpacity={0.6}
+                    dataKey="total"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="offPeak"
-                    stackId="1"
-                    stroke="#82ca9d"
-                    fill="#82ca9d"
-                    fillOpacity={0.6}
-                  />
-                  <Area type="monotone" dataKey="peak" stackId="1" stroke="#ffc658" fill="#ffc658" fillOpacity={0.6} />
-                </AreaChart>
+                </LineChart>
               </ResponsiveContainer>
             </div>
 
@@ -185,7 +167,7 @@ export function ConsumptionChart({ deviceType, deviceName }: ConsumptionChartPro
           <TabsContent value="monthly" className="mt-2">
             <div className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={monthlyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <LineChart data={monthlyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="week" />
                   <YAxis label={{ value: "kWh", angle: -90, position: "insideLeft" }} />
@@ -202,25 +184,17 @@ export function ConsumptionChart({ deviceType, deviceName }: ConsumptionChartPro
                     ]}
                   />
                   <Legend />
-                  <ReferenceLine y={monthlyAverage} label="Avg" stroke="#ff7300" strokeDasharray="3 3" />
-                  <Area
+                  <Line type="monotone" dataKey="peak" stroke="#ffc658" strokeWidth={2} />
+                  <Line type="monotone" dataKey="offPeak" stroke="#82ca9d" strokeWidth={2} />
+                  <Line type="monotone" dataKey="standby" stroke="#8884d8" strokeWidth={2} />
+                  <Line
                     type="monotone"
-                    dataKey="standby"
-                    stackId="1"
-                    stroke="#8884d8"
-                    fill="#8884d8"
-                    fillOpacity={0.6}
+                    dataKey="total"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="offPeak"
-                    stackId="1"
-                    stroke="#82ca9d"
-                    fill="#82ca9d"
-                    fillOpacity={0.6}
-                  />
-                  <Area type="monotone" dataKey="peak" stackId="1" stroke="#ffc658" fill="#ffc658" fillOpacity={0.6} />
-                </AreaChart>
+                </LineChart>
               </ResponsiveContainer>
             </div>
 

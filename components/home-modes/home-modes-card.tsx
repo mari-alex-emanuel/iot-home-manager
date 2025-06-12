@@ -191,10 +191,14 @@ export function HomeModesCard() {
     if (options.turnOffLights) {
       const activeLights = data.devices.filter((device) => isLightDevice(device) && device.status === "Online")
       for (const light of activeLights) {
-        updateDevice(light.id, {
-          status: "Offline",
-          lastActive: "Just now",
-        })
+        updateDevice(
+          light.id,
+          {
+            status: "Offline",
+            lastActive: "Just now",
+          },
+          true,
+        ) // Bypass permission check
         affectedDevices++
       }
     }
@@ -203,10 +207,14 @@ export function HomeModesCard() {
     if (options.lockDoors) {
       const closedDoors = data.devices.filter((device) => isDoorDevice(device) && !device.isOpen && !device.isLocked)
       for (const door of closedDoors) {
-        updateDevice(door.id, {
-          isLocked: true,
-          lastActive: "Just now",
-        })
+        updateDevice(
+          door.id,
+          {
+            isLocked: true,
+            lastActive: "Just now",
+          },
+          true,
+        ) // Bypass permission check
         affectedDevices++
       }
     }
@@ -215,12 +223,16 @@ export function HomeModesCard() {
     if (options.setTemperature) {
       // Actualizăm temperatura pentru toate camerele
       for (const room of data.rooms) {
-        updateRoom(room.id, {
-          temperatureRange: {
-            min: options.targetTemperature - 1,
-            max: options.targetTemperature + 1,
+        updateRoom(
+          room.id,
+          {
+            temperatureRange: {
+              min: options.targetTemperature - 1,
+              max: options.targetTemperature + 1,
+            },
           },
-        })
+          true,
+        ) // Bypass permission check
         affectedDevices++
       }
 
@@ -230,10 +242,14 @@ export function HomeModesCard() {
       )
 
       for (const device of temperatureDevices) {
-        updateDevice(device.id, {
-          temperature: options.targetTemperature,
-          lastActive: "Just now",
-        })
+        updateDevice(
+          device.id,
+          {
+            temperature: options.targetTemperature,
+            lastActive: "Just now",
+          },
+          true,
+        ) // Bypass permission check
         affectedDevices++
       }
     }
@@ -270,7 +286,7 @@ export function HomeModesCard() {
         updateData.temperature = savedDevice.temperature
       }
 
-      updateDevice(savedDevice.id, updateData)
+      updateDevice(savedDevice.id, updateData, true) // Bypass permission check
       restoredDevices++
     }
 
@@ -281,12 +297,16 @@ export function HomeModesCard() {
       if (!room) continue
 
       // Actualizăm camera cu valorile salvate
-      updateRoom(savedRoom.id, {
-        temperatureRange: {
-          min: savedRoom.temperatureRange.min,
-          max: savedRoom.temperatureRange.max,
+      updateRoom(
+        savedRoom.id,
+        {
+          temperatureRange: {
+            min: savedRoom.temperatureRange.min,
+            max: savedRoom.temperatureRange.max,
+          },
         },
-      })
+        true,
+      ) // Bypass permission check
       restoredDevices++
     }
 

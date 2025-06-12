@@ -5,9 +5,13 @@ import { Switch } from "@/components/ui/switch"
 import { Thermometer, Droplets, LightbulbIcon, Power } from "lucide-react"
 import { useSmartHome } from "@/contexts/smart-home-context"
 import { IconWrapper } from "@/components/ui/icon-wrapper"
+import { useAuth } from "@/contexts/auth-context"
+import { useCustomToast } from "@/components/toast-provider"
 
 export function RoomCards() {
   const { data, updateDevice, getDevicesByRoomId } = useSmartHome()
+  const { isAdmin, authState, isAuthenticated } = useAuth()
+  const { showToast } = useCustomToast()
 
   // Funcție pentru a extrage temperatura din proprietățile termostatului
   const extractTemperature = (device: any) => {
@@ -82,6 +86,23 @@ export function RoomCards() {
     }
 
     return null
+  }
+
+  // Funcție pentru a gestiona schimbarea stării unui dispozitiv
+  const handleDeviceToggle = (deviceId: number, checked: boolean) => {
+    if (!isAuthenticated()) {
+      showToast({
+        title: "Permisiune refuzată",
+        description: "Nu aveți permisiunea de a controla dispozitivele.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    updateDevice(deviceId, {
+      status: checked ? "Online" : "Offline",
+      lastActive: "Just now",
+    })
   }
 
   return (
@@ -160,12 +181,7 @@ export function RoomCards() {
                             </div>
                             <Switch
                               checked={light.status === "Online"}
-                              onCheckedChange={(checked) => {
-                                updateDevice(light.id, {
-                                  status: checked ? "Online" : "Offline",
-                                  lastActive: "Just now",
-                                })
-                              }}
+                              onCheckedChange={(checked) => handleDeviceToggle(light.id, checked)}
                             />
                           </div>
                         ))}
@@ -189,12 +205,7 @@ export function RoomCards() {
                             </div>
                             <Switch
                               checked={outlet.status === "Online"}
-                              onCheckedChange={(checked) => {
-                                updateDevice(outlet.id, {
-                                  status: checked ? "Online" : "Offline",
-                                  lastActive: "Just now",
-                                })
-                              }}
+                              onCheckedChange={(checked) => handleDeviceToggle(outlet.id, checked)}
                             />
                           </div>
                         ))}

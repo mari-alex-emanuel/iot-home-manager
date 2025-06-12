@@ -52,22 +52,22 @@ export function DeviceDetails({ id }: DeviceDetailsProps) {
     })
   }
 
-  // Verificăm dacă dispozitivul are informații complete
-  const hasCompleteInfo = Boolean(
-    deviceData.serialNumber &&
-      deviceData.manufacturer &&
-      deviceData.model &&
-      deviceData.firmwareVersion &&
-      deviceData.installationDate &&
-      deviceData.ipAddress &&
-      deviceData.macAddress &&
-      deviceData.powerConsumption &&
+  // Verificăm dacă dispozitivul are cel puțin câteva informații tehnice
+  const hasDeviceInfo = Boolean(
+    deviceData.serialNumber ||
+      deviceData.manufacturer ||
+      deviceData.model ||
+      deviceData.firmwareVersion ||
+      deviceData.installationDate ||
+      deviceData.ipAddress ||
+      deviceData.macAddress ||
+      deviceData.powerConsumption ||
       deviceData.batteryLevel,
   )
 
   // Determinăm ce taburi să afișăm
   const tabs = [
-    ...(hasCompleteInfo ? [{ id: "info", label: "Device Info" }] : []),
+    ...(hasDeviceInfo ? [{ id: "info", label: "Device Info" }] : []),
     ...(isLightDevice(deviceData) ? [{ id: "control", label: "Light Control" }] : []),
     ...(isSmokeDetectorDevice(deviceData) ? [{ id: "smoke", label: "Smoke Detector" }] : []),
     ...(isMotionSensorDevice(deviceData) ? [{ id: "motion", label: "Motion Sensor" }] : []),
@@ -111,7 +111,7 @@ export function DeviceDetails({ id }: DeviceDetailsProps) {
               ))}
             </TabsList>
 
-            {hasCompleteInfo && (
+            {hasDeviceInfo && (
               <TabsContent value="info" className="space-y-4">
                 <Card>
                   <CardHeader>

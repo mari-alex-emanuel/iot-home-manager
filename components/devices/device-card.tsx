@@ -8,6 +8,7 @@ import { Info, Trash2 } from "lucide-react"
 import Link from "next/link"
 import type { Device } from "@/lib/types"
 import { getDeviceIcon } from "@/lib/device-utils"
+import { useAuth } from "@/contexts/auth-context"
 
 interface DeviceCardProps {
   device: Device
@@ -17,6 +18,8 @@ interface DeviceCardProps {
 }
 
 export function DeviceCard({ device, roomName, onDelete, actions }: DeviceCardProps) {
+  const { isAdmin } = useAuth()
+
   return (
     <Card className="h-full hover:bg-muted/30 transition-colors">
       <CardHeader className="pb-2">
@@ -39,12 +42,14 @@ export function DeviceCard({ device, roomName, onDelete, actions }: DeviceCardPr
             <Link href={`/devices/${device.id}`}>
               <ActionButton variant="outline" icon={Info} label="Device Details" />
             </Link>
-            <ActionButton
-              variant="destructive"
-              icon={Trash2}
-              label="Delete Device"
-              onClick={() => onDelete(device.id)}
-            />
+            {isAdmin() && (
+              <ActionButton
+                variant="destructive"
+                icon={Trash2}
+                label="Delete Device"
+                onClick={() => onDelete(device.id)}
+              />
+            )}
           </div>
         </div>
       </CardContent>

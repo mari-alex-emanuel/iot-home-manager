@@ -13,6 +13,7 @@ import Link from "next/link"
 import { roomTypes } from "@/lib/types"
 import { ActionButton } from "@/components/ui/action-button"
 import { getDeviceIcon } from "@/lib/device-utils"
+import { useAuth } from "@/contexts/auth-context"
 
 interface RoomDetailProps {
   roomId: number
@@ -20,6 +21,7 @@ interface RoomDetailProps {
 
 export function RoomDetail({ roomId }: RoomDetailProps) {
   const { data, deleteRoom, updateRoom, getDevicesByRoomId } = useSmartHome()
+  const { isAdmin } = useAuth()
   const [editingRoom, setEditingRoom] = useState<null | { id: number; name: string; type: string }>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isAddDeviceDialogOpen, setIsAddDeviceDialogOpen] = useState(false)
@@ -56,18 +58,20 @@ export function RoomDetail({ roomId }: RoomDetailProps) {
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleEditRoom}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit Room
-          </Button>
-          <Button variant="destructive" onClick={() => deleteRoom(room.id)} asChild>
-            <Link href="/rooms">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Room
-            </Link>
-          </Button>
-        </div>
+        {isAdmin() && (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleEditRoom}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Room
+            </Button>
+            <Button variant="destructive" onClick={() => deleteRoom(room.id)} asChild>
+              <Link href="/rooms">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Room
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -103,10 +107,12 @@ export function RoomDetail({ roomId }: RoomDetailProps) {
               <div className="text-center py-6 text-muted-foreground">No devices in this room</div>
             )}
 
-            <Button className="w-full mt-4" variant="outline" onClick={() => setIsAddDeviceDialogOpen(true)}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Device
-            </Button>
+            {isAdmin() && (
+              <Button className="w-full mt-4" variant="outline" onClick={() => setIsAddDeviceDialogOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Device
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>

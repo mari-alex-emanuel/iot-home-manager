@@ -1,16 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { BarChart3, Home, LightbulbIcon, Zap, Menu, X, Settings } from "lucide-react"
+import { BarChart3, Home, LightbulbIcon, Zap, Menu, X, Settings, Users, Calculator } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const { isAdmin, authState } = useAuth()
 
-  const menuItems = [
+  // Meniul de bază disponibil pentru toți utilizatorii
+  const baseMenuItems = [
     {
       title: "Dashboard",
       icon: BarChart3,
@@ -31,7 +34,24 @@ export function MobileMenu() {
       icon: Settings,
       href: "/modes",
     },
+    {
+      title: "Analiză Cost",
+      icon: Calculator,
+      href: "/cost-analysis",
+    },
   ]
+
+  // Adăugăm elementele de meniu pentru admin
+  const adminMenuItems = [
+    {
+      title: "Utilizatori",
+      icon: Users,
+      href: "/users",
+    },
+  ]
+
+  // Combinăm meniurile în funcție de rol
+  const menuItems = isAdmin() ? [...baseMenuItems, ...adminMenuItems] : baseMenuItems
 
   // Închide meniul când se schimbă ruta
   useEffect(() => {
@@ -50,6 +70,11 @@ export function MobileMenu() {
     }
   }, [isOpen])
 
+  // Nu afișăm meniul dacă utilizatorul nu este autentificat
+  if (!authState.isAuthenticated) {
+    return null
+  }
+
   return (
     <>
       {/* Buton pentru deschiderea meniului mobil - vizibil doar când meniul este închis */}
@@ -57,7 +82,7 @@ export function MobileMenu() {
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 md:hidden"
+          className="absolute top-4 left-4 z-50 md:hidden"
           onClick={() => setIsOpen(true)}
           aria-label="Open menu"
         >
